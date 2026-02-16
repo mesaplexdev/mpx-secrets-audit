@@ -293,7 +293,7 @@ program
   .description('Generate audit report')
   .option('-f, --format <format>', 'Report format (text, json, markdown)', 'text')
   .option('-o, --output <file>', 'Output file (defaults to stdout)')
-  .action((options) => {
+  .action(async (options) => {
     try {
       if (!configExists()) {
         console.error(chalk.red('Error:'), 'No config file found.');
@@ -323,8 +323,8 @@ program
       }
 
       if (options.output) {
-        const fs = await import('fs');
-        fs.writeFileSync(options.output, report, 'utf8');
+        const { writeFileSync } = await import('fs');
+        writeFileSync(options.output, report, 'utf8');
         console.log(chalk.green('✓ Report saved to:'), options.output);
       } else {
         console.log(report);

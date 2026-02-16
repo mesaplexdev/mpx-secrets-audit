@@ -2,6 +2,7 @@
   "name": "mpx-secrets-audit",
   "version": "1.0.0",
   "description": "Never get caught with expired API keys again — track, audit, and get warned before your secrets expire.",
+  "type": "module",
   "main": "lib/index.js",
   "bin": {
     "mpx-secrets-audit": "./bin/cli.js"

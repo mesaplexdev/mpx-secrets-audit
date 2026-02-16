@@ -391,6 +391,168 @@ export GITHUB_TOKEN=ghp_your_token_here
 mpx-secrets-audit scan-github --auto-add
 ```
 
+## AI Agent Usage
+
+`mpx-secrets-audit` is **AI-native** — designed for both humans and AI agents.
+
+### JSON Output
+
+Every command supports `--json` for structured, machine-readable output:
+
+```bash
+# Add a secret and get JSON response
+mpx-secrets-audit add my-key --provider aws --json
+
+# Check secrets status with JSON
+mpx-secrets-audit check --json
+
+# List all secrets as JSON
+mpx-secrets-audit list --json
+```
+
+**Example JSON output:**
+```json
+{
+  "success": true,
+  "total": 5,
+  "summary": {
+    "healthy": 3,
+    "warning": 1,
+    "critical": 1,
+    "expired": 0
+  },
+  "secrets": {
+    "healthy": [...],
+    "warning": [...],
+    "critical": [...]
+  },
+  "actionRequired": true
+}
+```
+
+### Schema Discovery
+
+AI agents can discover all commands, flags, inputs, and outputs:
+
+```bash
+mpx-secrets-audit --schema
+```
+
+Returns a complete JSON schema describing the tool's API surface, including:
+- All commands and subcommands
+- Required and optional flags
+- Input/output schemas
+- Exit codes
+- Examples
+
+### MCP (Model Context Protocol) Server
+
+Start an MCP stdio server to expose `mpx-secrets-audit` as AI tools:
+
+```bash
+mpx-secrets-audit mcp
+```
+
+**Add to your MCP client config** (e.g., Claude Desktop, Cline):
+
+```json
+{
+  "mcpServers": {
+    "mpx-secrets-audit": {
+      "command": "npx",
+      "args": ["mpx-secrets-audit", "mcp"]
+    }
+  }
+}
+```
+
+**Available MCP tools:**
+- `init` - Create config file
+- `add_secret` - Add secret to track
+- `list_secrets` - List all secrets with status
+- `check_secrets` - Run full audit
+- `remove_secret` - Remove secret from tracking
+- `rotate_secret` - Mark secret as rotated
+- `get_schema` - Get full tool schema
+
+**Example AI agent conversation:**
+```
+User: "Add my Stripe API key to tracking with 90-day rotation"
+Agent: [calls add_secret tool]
+Agent: "✓ Added stripe-api-key. Status: healthy. Next rotation in 90 days."
+
+User: "Check if any secrets need attention"
+Agent: [calls check_secrets tool]
+Agent: "Found 1 warning: aws-key expires in 25 days. Recommend rotation."
+```
+
+### Quiet Mode
+
+Suppress non-essential output with `--quiet` (or `-q`):
+
+```bash
+# Just output the secret name
+mpx-secrets-audit add my-key --quiet
+
+# Silent check (rely on exit codes)
+mpx-secrets-audit check --quiet --ci
+```
+
+Perfect for shell scripts and automation:
+```bash
+if mpx-secrets-audit check --quiet --ci; then
+  echo "All secrets healthy"
+else
+  echo "Secrets need attention!"
+fi
+```
+
+### Exit Codes
+
+Predictable exit codes for automation:
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success, all healthy |
+| `1` | Warnings found (CI mode with `--fail-on warning`) |
+| `2` | Critical/expired secrets found |
+
+**CI/CD integration:**
+```bash
+# Fail build on warnings
+mpx-secrets-audit check --ci --fail-on warning
+
+# Fail build only on critical
+mpx-secrets-audit check --ci --fail-on critical
+```
+
+### Composable & Non-Interactive
+
+All commands are **non-interactive** when using flags (no prompts):
+
+```bash
+# Add secret (no prompts, pure stdin/stdout)
+mpx-secrets-audit add stripe-key \
+  --provider stripe \
+  --type api_key \
+  --rotation 90 \
+  --json
+
+# Pipe output to jq for filtering
+mpx-secrets-audit list --json | jq '.secrets[] | select(.status == "critical")'
+
+# Generate report and upload
+mpx-secrets-audit report --format markdown --output report.md
+```
+
+**AI agents can chain commands:**
+```bash
+# Get all critical secrets, rotate them, and verify
+mpx-secrets-audit check --json | \
+  jq -r '.secrets.critical[].name' | \
+  xargs -I {} mpx-secrets-audit rotate {} --json
+```
+
 ## Free vs Pro
 
 | Feature | Free | Pro ($12/mo) |

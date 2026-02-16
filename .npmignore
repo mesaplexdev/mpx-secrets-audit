@@ -1,0 +1,11 @@
+test/
+tests/
+*.test.js
+.env
+.env.*
+.github/
+BUILD_SUMMARY.md
+.secrets-audit.json
+coverage/
+.vscode/
+.idea/

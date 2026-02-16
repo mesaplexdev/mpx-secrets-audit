@@ -170,8 +170,8 @@ program
 program
   .command('check')
   .description('Run audit and check for expiring/old secrets')
-  .option('--ci', 'CI mode: exit with code 1 for warnings, 2 for critical/expired')
-  .option('--fail-on <level>', 'Fail on this level or higher (warning, critical, expired)', 'critical')
+  .option('--ci', 'CI mode: exit with code 1 for warnings, 2 for critical/expired (default --fail-on warning)')
+  .option('--fail-on <level>', 'Fail on this level or higher (warning, critical, expired)')
   .action((options) => {
     try {
       if (!configExists()) {
@@ -217,7 +217,7 @@ program
 
       // CI mode exit codes
       if (options.ci) {
-        const failLevel = options.failOn;
+        const failLevel = options.failOn || 'warning';
         
         if (results.expired.length > 0 && ['expired', 'critical', 'warning'].includes(failLevel)) {
           process.exit(2);

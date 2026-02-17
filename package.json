@@ -45,5 +45,12 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "files": [
+    "lib/",
+    "bin/",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ]
 }

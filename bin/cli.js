@@ -842,6 +842,79 @@ program
     }
   });
 
+// Update subcommand
+program
+  .command('update')
+  .description('Check for updates and optionally install the latest version')
+  .option('--check', 'Only check for updates (do not install)')
+  .option('--json', 'Output as JSON')
+  .action(async (options) => {
+    const { checkForUpdate, performUpdate } = await import('../lib/update.js');
+    const jsonMode = options.json;
+
+    try {
+      const info = checkForUpdate();
+
+      if (jsonMode) {
+        const output = {
+          current: info.current,
+          latest: info.latest,
+          updateAvailable: info.updateAvailable,
+          isGlobal: info.isGlobal
+        };
+
+        if (!options.check && info.updateAvailable) {
+          try {
+            const result = performUpdate(info.isGlobal);
+            output.updated = true;
+            output.newVersion = result.version;
+          } catch (err) {
+            output.updated = false;
+            output.error = err.message;
+          }
+        }
+
+        console.log(JSON.stringify(output, null, 2));
+        process.exit(0);
+        return;
+      }
+
+      // Human-readable output
+      if (!info.updateAvailable) {
+        console.log('');
+        console.log(chalk.green.bold(`✓ mpx-secrets-audit v${info.current} is up to date`));
+        console.log('');
+        process.exit(0);
+        return;
+      }
+
+      console.log('');
+      console.log(chalk.yellow.bold(`⬆ Update available: v${info.current} → v${info.latest}`));
+
+      if (options.check) {
+        console.log(chalk.gray(`Run ${chalk.cyan('mpx-secrets-audit update')} to install`));
+        console.log('');
+        process.exit(0);
+        return;
+      }
+
+      console.log(chalk.gray(`Installing v${info.latest}${info.isGlobal ? ' (global)' : ''}...`));
+
+      const result = performUpdate(info.isGlobal);
+      console.log(chalk.green.bold(`✓ Updated to v${result.version}`));
+      console.log('');
+      process.exit(0);
+    } catch (err) {
+      if (jsonMode) {
+        console.log(JSON.stringify({ error: err.message, code: 'ERR_UPDATE' }, null, 2));
+      } else {
+        console.error(chalk.red.bold('\n❌ Update check failed:'), err.message);
+        console.error('');
+      }
+      process.exit(1);
+    }
+  });
+
 // MCP subcommand
 program
   .command('mcp')

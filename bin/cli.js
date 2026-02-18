@@ -954,7 +954,7 @@ program
 // MCP subcommand
 program
   .command('mcp')
-  .description('Start MCP (Model Context Protocol) stdio server for AI agent integration')
+  .description('Start MCP (Model Context Protocol) stdio server')
   .action(async () => {
     try {
       await startMCPServer();

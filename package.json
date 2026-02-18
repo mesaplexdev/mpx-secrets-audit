@@ -5,7 +5,7 @@
   "type": "module",
   "main": "lib/index.js",
   "bin": {
-    "mpx-secrets-audit": "./bin/cli.js"
+    "mpx-secrets-audit": "bin/cli.js"
   },
   "scripts": {
     "test": "node --test test/*.test.js",
@@ -28,7 +28,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mesaplexdev/mpx-secrets-audit.git"
+    "url": "git+https://github.com/mesaplexdev/mpx-secrets-audit.git"
   },
   "bugs": {
     "url": "https://github.com/mesaplexdev/mpx-secrets-audit/issues"
@@ -54,7 +54,6 @@
     "lib/",
     "bin/",
     "README.md",
-    "LICENSE",
-    "package.json"
+    "LICENSE"
   ]
 }

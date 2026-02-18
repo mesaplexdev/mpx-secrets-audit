@@ -398,11 +398,11 @@ program
         const failLevel = options.failOn || 'warning';
         
         if (results.expired.length > 0 && ['expired', 'critical', 'warning'].includes(failLevel)) {
-          process.exit(2);
+          process.exit(1);
         }
         
         if (results.critical.length > 0 && ['critical', 'warning'].includes(failLevel)) {
-          process.exit(2);
+          process.exit(1);
         }
         
         if (results.warning.length > 0 && failLevel === 'warning') {
@@ -976,6 +976,6 @@ try {
   if (err.code !== 'commander.help' && err.code !== 'commander.helpDisplayed') {
     const msg = err.message.startsWith('error:') ? `Error: ${err.message.slice(7)}` : `Error: ${err.message}`;
     console.error(chalk.red(msg));
-    process.exit(1);
+    process.exit(2);
   }
 }

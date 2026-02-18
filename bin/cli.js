@@ -41,7 +41,28 @@ program
   .name('mpx-secrets-audit')
   .description('Never get caught with expired API keys again — track, audit, and get warned before your secrets expire.')
   .version(pkg.version)
+  .option('--json', 'Output as JSON (machine-readable)')
+  .option('-q, --quiet', 'Suppress non-essential output')
+  .option('--no-color', 'Disable colored output')
   .option('--schema', 'Output JSON schema describing all commands and flags');
+
+// Handle --no-color
+if (process.argv.includes('--no-color') || !process.stdout.isTTY) {
+  chalk.level = 0;
+}
+
+// Propagate global --json and --quiet to subcommands
+program.hook('preAction', (thisCommand) => {
+  const parentOpts = thisCommand.parent?.opts() || {};
+  const opts = thisCommand.opts();
+  // Global --json and --quiet flow down to subcommands
+  if (parentOpts.json && !opts.json) {
+    thisCommand.setOptionValue('json', true);
+  }
+  if (parentOpts.quiet && !opts.quiet) {
+    thisCommand.setOptionValue('quiet', true);
+  }
+});
 
 // Helper function for interactive prompts
 function prompt(question) {

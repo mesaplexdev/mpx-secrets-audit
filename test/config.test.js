@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { unlinkSync, existsSync, mkdirSync, rmSync } from 'fs';
+import { unlinkSync, existsSync, mkdirSync, rmSync, renameSync } from 'fs';
 import { join } from 'path';
+import { homedir } from 'os';
 import { initConfig, loadConfig, saveConfig, configExists } from '../lib/config.js';
 
 const TEST_CONFIG = '.secrets-audit.test.json';
@@ -40,11 +41,25 @@ test('config: loadConfig throws error when config does not exist', () => {
     unlinkSync('.secrets-audit.json');
   }
   
-  assert.throws(
-    () => loadConfig(),
-    /No config file found/,
-    'Should throw error when config does not exist'
-  );
+  // Temporarily hide global config if it exists
+  const globalConfig = join(homedir(), '.config', 'mpx-secrets-audit', 'config.json');
+  const globalBackup = globalConfig + '.bak';
+  const hadGlobal = existsSync(globalConfig);
+  if (hadGlobal) {
+    renameSync(globalConfig, globalBackup);
+  }
+  
+  try {
+    assert.throws(
+      () => loadConfig(),
+      /No config file found/,
+      'Should throw error when config does not exist'
+    );
+  } finally {
+    if (hadGlobal) {
+      renameSync(globalBackup, globalConfig);
+    }
+  }
 });
 
 test('config: saveConfig persists changes', () => {

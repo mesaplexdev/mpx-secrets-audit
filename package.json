@@ -1,7 +1,7 @@
 {
   "name": "mpx-secrets-audit",
   "version": "1.1.2",
-  "description": "Never get caught with expired API keys again — track, audit, and get warned before your secrets expire.",
+  "description": "Secrets expiration tracking and audit CLI. Monitor API keys, tokens, and credentials. AI-native with JSON output and MCP server.",
   "type": "module",
   "main": "lib/index.js",
   "bin": {
@@ -11,18 +11,23 @@
     "test": "node --test test/*.test.js",
     "lint": "echo 'Linting...' && exit 0"
   },
+  "funding": "https://mesaplex.com/pricing",
   "keywords": [
+    "cli",
+    "devtools",
+    "mesaplex",
+    "ai-native",
+    "mcp",
+    "model-context-protocol",
+    "automation",
+    "json-output",
     "secrets",
     "audit",
     "api-key",
     "rotation",
     "security",
     "compliance",
-    "devops",
-    "ai-native",
-    "mcp",
-    "model-context-protocol",
-    "automation"
+    "devops"
   ],
   "author": "Mesaplex <support@mesaplex.com>",
   "license": "SEE LICENSE IN LICENSE",

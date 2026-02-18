@@ -1,47 +1,40 @@
-# mpx-secrets-audit
+# mpx-secrets-audit 🔐
 
-> **Never get caught with expired API keys again** — track, audit, and get warned before your secrets expire.
+**Track, audit, and get warned before your API keys and secrets expire.**
 
-`mpx-secrets-audit` is a CLI tool that tracks the lifecycle of API keys, tokens, and credentials across services. Think "Fitbit for API keys" — it doesn't STORE secrets (that's Vault/Doppler), it TRACKS their age, expiry, and rotation status.
+Think "Fitbit for API keys" — it doesn't store secrets (that's Vault/Doppler), it tracks their age, expiry, and rotation status.
 
-## The Problem
+Part of the [Mesaplex](https://mesaplex.com) developer toolchain.
 
-- API keys expire without warning
-- Credentials get forgotten and never rotated
-- Production outages from expired secrets
-- No centralized view of secret health across services
-- Compliance requirements for regular rotation
+[![npm version](https://img.shields.io/npm/v/mpx-secrets-audit.svg)](https://www.npmjs.com/package/mpx-secrets-audit)
+[![License: Dual](https://img.shields.io/badge/license-Dual-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org)
 
-## The Solution
+## Features
 
-`mpx-secrets-audit` tracks metadata about your secrets (NOT the actual values) and alerts you when:
-- Keys are approaching expiry
-- Rotation policies are past due
-- Secrets are too old and need refresh
-
-Perfect for:
-- DevOps teams managing multiple API keys
-- CI/CD pipelines that need secret rotation checks
-- Security compliance reporting
-- Personal projects with scattered credentials
+- **Secret lifecycle tracking** — Track age, expiry, and rotation status
+- **Status dashboard** — Color-coded health overview of all secrets
+- **Rotation policies** — Get warned when secrets are due for rotation
+- **CI/CD ready** — Exit codes, JSON output, no GUI dependency
+- **Multiple report formats** — Text, JSON, Markdown (JSON/Markdown Pro)
+- **Cloud scanners** — Auto-detect AWS IAM keys and GitHub PATs (Pro)
+- **MCP server** — Integrates with any MCP-compatible AI agent
+- **Self-documenting** — `--schema` returns machine-readable tool description
+- **No secrets stored** — Only metadata (names, dates, providers), never actual values
 
 ## Installation
 
-### Global Install
 ```bash
 npm install -g mpx-secrets-audit
 ```
 
-### One-off Usage with npx
+Or run directly with npx:
+
 ```bash
 npx mpx-secrets-audit init
-npx mpx-secrets-audit add my-api-key
 ```
 
-### Local Project Install
-```bash
-npm install --save-dev mpx-secrets-audit
-```
+**Requirements:** Node.js 18+ · No native dependencies · macOS, Linux, Windows
 
 ## Quick Start
 
@@ -66,27 +59,19 @@ mpx-secrets-audit list
 mpx-secrets-audit report
 ```
 
-## Commands
+## Usage
 
-### `init`
-Create a new secrets audit config file.
+### Initialize
 
 ```bash
-# Local config (.secrets-audit.json in current directory)
-mpx-secrets-audit init
-
-# Global config (~/.config/mpx-secrets-audit/config.json)
-mpx-secrets-audit init --global
+mpx-secrets-audit init              # Local config (.secrets-audit.json)
+mpx-secrets-audit init --global     # Global config (~/.config/mpx-secrets-audit/)
 ```
 
-### `add <name>`
-Add a new secret to track.
+### Add a Secret
 
 ```bash
-# Interactive mode (prompts for all fields)
-mpx-secrets-audit add my-api-key --interactive
-
-# Command-line flags
+# With flags
 mpx-secrets-audit add github-token \
   --provider github \
   --type personal_access_token \
@@ -94,323 +79,78 @@ mpx-secrets-audit add github-token \
   --expires 2026-01-15 \
   --rotation 90 \
   --notes "Production token with repo access"
+
+# Interactive mode
+mpx-secrets-audit add my-api-key --interactive
 ```
 
-**Options:**
-- `-p, --provider <provider>` - Service provider (e.g., stripe, aws, github)
-- `-t, --type <type>` - Secret type (api_key, token, password)
-- `-c, --created <date>` - Creation date (YYYY-MM-DD)
-- `-e, --expires <date>` - Expiry date (YYYY-MM-DD)
-- `-r, --rotation <days>` - Rotation policy in days (default: 90)
-- `-n, --notes <notes>` - Additional notes
-- `-i, --interactive` - Interactive mode
+Options: `--provider`, `--type`, `--created`, `--expires`, `--rotation` (days), `--notes`, `--interactive`
 
-### `list`
-List all tracked secrets.
+### Check Status
 
 ```bash
-# List all
-mpx-secrets-audit list
+mpx-secrets-audit check                        # Standard check
+mpx-secrets-audit check --ci                   # CI mode (exit codes)
+mpx-secrets-audit check --ci --fail-on warning # Fail on warnings
+```
 
-# Filter by status
-mpx-secrets-audit list --status warning
+### List Secrets
+
+```bash
+mpx-secrets-audit list                    # List all
+mpx-secrets-audit list --status warning   # Filter by status
 mpx-secrets-audit list --status critical
 ```
 
-**Output:**
-```
-🟢 stripe-api-key
-   Provider: stripe | Type: api_key
-   Status: HEALTHY - Healthy
-   Age: 15 days
-   
-🟡 aws-access-key
-   Provider: aws | Type: access_key
-   Status: WARNING - 20 days until rotation due
-   Age: 70 days
-```
-
-### `check`
-Run audit and check for expiring/old secrets.
+### Rotate & Remove
 
 ```bash
-# Standard check
-mpx-secrets-audit check
-
-# CI/CD mode (exit codes for automation)
-mpx-secrets-audit check --ci
-
-# Fail on warnings (default: fail on critical)
-mpx-secrets-audit check --ci --fail-on warning
+mpx-secrets-audit rotate stripe-api-key   # Mark as rotated (updates date)
+mpx-secrets-audit remove old-api-key      # Stop tracking
 ```
 
-**Exit Codes:**
-- `0` - All secrets healthy
-- `1` - Warnings found
-- `2` - Critical or expired secrets found
-
-**Example Output:**
-```
-🔍 Secrets Audit Results
-
-Total secrets: 5
-🟢 Healthy: 3
-🟡 Warning: 1
-🔴 Critical: 1
-⛔ Expired: 0
-
-🔴 CRITICAL:
-  • aws-key-1234: Past rotation policy by 15 days
-
-🟡 WARNINGS:
-  • github-token: 25 days until rotation due
-
-⚠️  Action required! Rotate or renew these secrets.
-```
-
-### `remove <name>`
-Stop tracking a secret.
+### Reports
 
 ```bash
-mpx-secrets-audit remove old-api-key
+mpx-secrets-audit report                              # Text report
+mpx-secrets-audit report --format json                # JSON (Pro)
+mpx-secrets-audit report --format markdown            # Markdown (Pro)
+mpx-secrets-audit report --format markdown --output report.md
 ```
 
-### `rotate <name>`
-Mark a secret as rotated (updates last-rotated date to today).
+### Cloud Scanners (Pro)
 
 ```bash
-mpx-secrets-audit rotate stripe-api-key
-```
-
-### `report`
-Generate audit report in various formats.
-
-```bash
-# Text report (stdout)
-mpx-secrets-audit report
-
-# JSON report
-mpx-secrets-audit report --format json
-
-# Markdown report
-mpx-secrets-audit report --format markdown
-
-# Save to file
-mpx-secrets-audit report --format markdown --output audit-report.md
-```
-
-### `scan-aws` (Pro)
-Auto-detect AWS IAM access keys.
-
-```bash
-# List discovered keys
+# AWS IAM key discovery
 mpx-secrets-audit scan-aws
-
-# Automatically add to tracking
 mpx-secrets-audit scan-aws --auto-add
-```
 
-**Requirements:**
-- AWS credentials configured (`~/.aws/credentials` or env vars)
-- `@aws-sdk/client-iam` package installed
-- Pro tier
-
-### `scan-github` (Pro)
-Verify GitHub Personal Access Token.
-
-```bash
-# Check current token
+# GitHub PAT verification
 GITHUB_TOKEN=ghp_xxx mpx-secrets-audit scan-github
-
-# Add to tracking
 GITHUB_TOKEN=ghp_xxx mpx-secrets-audit scan-github --auto-add
 ```
 
-**Requirements:**
-- `GITHUB_TOKEN` environment variable
-- `@octokit/rest` package installed
-- Pro tier
-
-## Configuration
-
-Config file location (searched in order):
-1. `.secrets-audit.json` (local, current directory)
-2. `~/.config/mpx-secrets-audit/config.json` (global)
-
-**Example config:**
-```json
-{
-  "version": "1.0.0",
-  "tier": "free",
-  "secrets": [
-    {
-      "name": "stripe-api-key",
-      "provider": "stripe",
-      "type": "api_key",
-      "createdAt": "2025-06-15",
-      "expiresAt": null,
-      "lastRotated": "2025-06-15",
-      "rotationPolicy": 90,
-      "status": "healthy",
-      "notes": "Production key"
-    }
-  ]
-}
-```
-
-**Fields:**
-- `name` - Unique identifier for the secret
-- `provider` - Service provider (stripe, aws, github, etc.)
-- `type` - Secret type (api_key, token, password, etc.)
-- `createdAt` - Creation date (YYYY-MM-DD)
-- `expiresAt` - Expiry date (YYYY-MM-DD) or `null`
-- `lastRotated` - Last rotation date (YYYY-MM-DD)
-- `rotationPolicy` - Days between rotations
-- `status` - Calculated status (healthy, warning, critical, expired)
-- `notes` - Optional notes
-
-## Status Logic
-
-Secrets are automatically categorized based on age and expiry:
+### Status Logic
 
 | Status | Emoji | Criteria |
 |--------|-------|----------|
-| **Healthy** | 🟢 | Within rotation policy, not near expiry |
-| **Warning** | 🟡 | >75% through rotation policy OR <30 days to expiry |
-| **Critical** | 🔴 | Past rotation policy OR <7 days to expiry |
-| **Expired** | ⛔ | Past expiry date |
-
-## CI/CD Integration
-
-### GitHub Actions
-
-```yaml
-name: Secret Audit
-
-on:
-  schedule:
-    - cron: '0 9 * * 1' # Every Monday at 9 AM
-  workflow_dispatch:
-
-jobs:
-  audit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      
-      - name: Install mpx-secrets-audit
-        run: npm install -g mpx-secrets-audit
-      
-      - name: Run audit
-        run: mpx-secrets-audit check --ci --fail-on warning
-      
-      - name: Generate report
-        if: failure()
-        run: mpx-secrets-audit report --format markdown > audit-report.md
-      
-      - name: Upload report
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: audit-report
-          path: audit-report.md
-```
-
-### GitLab CI
-
-```yaml
-secret-audit:
-  image: node:18
-  script:
-    - npm install -g mpx-secrets-audit
-    - mpx-secrets-audit check --ci --fail-on warning
-  only:
-    - schedules
-```
-
-### Pre-commit Hook
-
-```bash
-#!/bin/bash
-# .git/hooks/pre-commit
-
-npx mpx-secrets-audit check --ci --fail-on critical
-if [ $? -ne 0 ]; then
-  echo "❌ Secret audit failed! Critical secrets need rotation."
-  exit 1
-fi
-```
-
-## AWS IAM Scanner Setup
-
-### Install AWS SDK
-```bash
-npm install -g @aws-sdk/client-iam
-```
-
-### Configure AWS Credentials
-```bash
-# Option 1: AWS CLI
-aws configure
-
-# Option 2: Environment variables
-export AWS_ACCESS_KEY_ID=xxx
-export AWS_SECRET_ACCESS_KEY=xxx
-export AWS_REGION=us-east-1
-
-# Option 3: ~/.aws/credentials file
-[default]
-aws_access_key_id = xxx
-aws_secret_access_key = xxx
-```
-
-### Run Scanner
-```bash
-mpx-secrets-audit scan-aws --auto-add
-```
-
-## GitHub Scanner Setup
-
-### Install Octokit
-```bash
-npm install -g @octokit/rest
-```
-
-### Set GitHub Token
-```bash
-export GITHUB_TOKEN=ghp_your_token_here
-```
-
-### Run Scanner
-```bash
-mpx-secrets-audit scan-github --auto-add
-```
+| Healthy | 🟢 | Within rotation policy, not near expiry |
+| Warning | 🟡 | >75% through rotation policy OR <30 days to expiry |
+| Critical | 🔴 | Past rotation policy OR <7 days to expiry |
+| Expired | ⛔ | Past expiry date |
 
 ## AI Agent Usage
 
-`mpx-secrets-audit` is **AI-native** — designed for both humans and AI agents.
+mpx-secrets-audit is designed to be used by AI agents as well as humans.
 
 ### JSON Output
 
-Every command supports `--json` for structured, machine-readable output:
+Add `--json` to any command for structured, machine-readable output:
 
 ```bash
-# Add a secret and get JSON response
-mpx-secrets-audit add my-key --provider aws --json
-
-# Check secrets status with JSON
 mpx-secrets-audit check --json
-
-# List all secrets as JSON
-mpx-secrets-audit list --json
 ```
 
-**Example JSON output:**
 ```json
 {
   "success": true,
@@ -421,39 +161,22 @@ mpx-secrets-audit list --json
     "critical": 1,
     "expired": 0
   },
-  "secrets": {
-    "healthy": [...],
-    "warning": [...],
-    "critical": [...]
-  },
+  "secrets": { ... },
   "actionRequired": true
 }
 ```
 
 ### Schema Discovery
 
-AI agents can discover all commands, flags, inputs, and outputs:
-
 ```bash
 mpx-secrets-audit --schema
 ```
 
-Returns a complete JSON schema describing the tool's API surface, including:
-- All commands and subcommands
-- Required and optional flags
-- Input/output schemas
-- Exit codes
-- Examples
+Returns a complete JSON schema describing all commands, flags, inputs, outputs, and examples.
 
-### MCP (Model Context Protocol) Server
+### MCP Integration
 
-Start an MCP stdio server to expose `mpx-secrets-audit` as AI tools:
-
-```bash
-mpx-secrets-audit mcp
-```
-
-**Add to your MCP client config** (e.g., Claude Desktop, Cline):
+Add to your MCP client configuration (Claude Desktop, Cursor, Windsurf, etc.):
 
 ```json
 {
@@ -466,204 +189,87 @@ mpx-secrets-audit mcp
 }
 ```
 
-**Available MCP tools:**
-- `init` - Create config file
-- `add_secret` - Add secret to track
-- `list_secrets` - List all secrets with status
-- `check_secrets` - Run full audit
-- `remove_secret` - Remove secret from tracking
-- `rotate_secret` - Mark secret as rotated
-- `get_schema` - Get full tool schema
-
-**Example AI agent conversation:**
-```
-User: "Add my Stripe API key to tracking with 90-day rotation"
-Agent: [calls add_secret tool]
-Agent: "✓ Added stripe-api-key. Status: healthy. Next rotation in 90 days."
-
-User: "Check if any secrets need attention"
-Agent: [calls check_secrets tool]
-Agent: "Found 1 warning: aws-key expires in 25 days. Recommend rotation."
-```
-
-### Quiet Mode
-
-Suppress non-essential output with `--quiet` (or `-q`):
-
-```bash
-# Just output the secret name
-mpx-secrets-audit add my-key --quiet
-
-# Silent check (rely on exit codes)
-mpx-secrets-audit check --quiet --ci
-```
-
-Perfect for shell scripts and automation:
-```bash
-if mpx-secrets-audit check --quiet --ci; then
-  echo "All secrets healthy"
-else
-  echo "Secrets need attention!"
-fi
-```
+The MCP server exposes these tools:
+- **`init`** — Create config file
+- **`add_secret`** — Add secret to track
+- **`list_secrets`** — List all secrets with status
+- **`check_secrets`** — Run full audit
+- **`remove_secret`** — Remove secret from tracking
+- **`rotate_secret`** — Mark secret as rotated
+- **`get_schema`** — Get full tool schema
 
 ### Exit Codes
 
-Predictable exit codes for automation:
-
 | Code | Meaning |
 |------|---------|
-| `0` | Success, all healthy |
-| `1` | Warnings found (CI mode with `--fail-on warning`) |
-| `2` | Critical/expired secrets found |
+| 0 | All secrets healthy |
+| 1 | Warnings found (with `--fail-on warning`) |
+| 2 | Critical or expired secrets found |
 
-**CI/CD integration:**
-```bash
-# Fail build on warnings
-mpx-secrets-audit check --ci --fail-on warning
+### Automation Tips
 
-# Fail build only on critical
-mpx-secrets-audit check --ci --fail-on critical
-```
+- Use `--json` for machine-parseable output
+- Use `--quiet` to suppress banners and progress info
+- Use `--ci` for automation-friendly exit codes
+- Pipe output to `jq` for filtering
 
-### Composable & Non-Interactive
+## CI/CD Integration
 
-All commands are **non-interactive** when using flags (no prompts):
-
-```bash
-# Add secret (no prompts, pure stdin/stdout)
-mpx-secrets-audit add stripe-key \
-  --provider stripe \
-  --type api_key \
-  --rotation 90 \
-  --json
-
-# Pipe output to jq for filtering
-mpx-secrets-audit list --json | jq '.secrets[] | select(.status == "critical")'
-
-# Generate report and upload
-mpx-secrets-audit report --format markdown --output report.md
-```
-
-**AI agents can chain commands:**
-```bash
-# Get all critical secrets, rotate them, and verify
-mpx-secrets-audit check --json | \
-  jq -r '.secrets.critical[].name' | \
-  xargs -I {} mpx-secrets-audit rotate {} --json
+```yaml
+# .github/workflows/secret-audit.yml
+name: Secret Audit
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npx mpx-secrets-audit check --ci --fail-on warning
 ```
 
 ## Free vs Pro
 
-| Feature | Free | Pro ($12/mo) |
-|---------|------|--------------|
-| **Secrets tracked** | Up to 10 | Unlimited |
-| **Manual entry** | ✅ | ✅ |
-| **`check` and `list` commands** | ✅ | ✅ |
-| **Text reports** | ✅ | ✅ |
-| **JSON/Markdown reports** | ❌ | ✅ |
-| **AWS IAM scanner** | ❌ | ✅ |
-| **GitHub PAT scanner** | ❌ | ✅ |
-| **CI/CD exit codes** | ✅ | ✅ |
-| **Team sharing** | ❌ | ✅ |
-| **Future scanners** (GCP, Azure, Stripe) | ❌ | ✅ |
+| Feature | Free | Pro |
+|---------|------|-----|
+| Secrets tracked | Up to 10 | Unlimited |
+| Manual entry | ✅ | ✅ |
+| Check and list commands | ✅ | ✅ |
+| Text reports | ✅ | ✅ |
+| CI/CD exit codes | ✅ | ✅ |
+| MCP server | ✅ | ✅ |
+| JSON/Markdown reports | ❌ | ✅ |
+| AWS IAM scanner | ❌ | ✅ |
+| GitHub PAT scanner | ❌ | ✅ |
+| Team sharing | ❌ | ✅ |
 
 **Upgrade to Pro:** Coming soon!
-
-## Troubleshooting
-
-### "No config file found"
-Run `mpx-secrets-audit init` to create a config file first.
-
-### "AWS SDK not installed"
-Install the AWS SDK: `npm install @aws-sdk/client-iam`
-
-### "AWS credentials not configured"
-Set up your AWS credentials:
-```bash
-aws configure
-# OR
-export AWS_ACCESS_KEY_ID=xxx
-export AWS_SECRET_ACCESS_KEY=xxx
-```
-
-### "GITHUB_TOKEN environment variable not set"
-Export your GitHub token:
-```bash
-export GITHUB_TOKEN=ghp_your_token_here
-```
-
-### "Free tier limit reached"
-You've tracked 10 secrets (the free tier limit). Upgrade to Pro for unlimited secrets, or remove old secrets with `mpx-secrets-audit remove <name>`.
-
-### Config file location
-Local (`.secrets-audit.json`) takes precedence over global (`~/.config/mpx-secrets-audit/config.json`).
 
 ## Security Notes
 
 - **No actual secret values are stored** — only metadata (names, dates, providers)
-- Config files contain NO credentials — just tracking information
-- Safe to commit to version control (but consider `.gitignore` for `.secrets-audit.json`)
-- AWS and GitHub scanners never expose secret values, only metadata
-
-## Examples
-
-### Track Stripe API Key
-```bash
-mpx-secrets-audit add stripe-prod-key \
-  --provider stripe \
-  --type api_key \
-  --created 2025-01-01 \
-  --rotation 90 \
-  --notes "Production Stripe secret key"
-```
-
-### Track GitHub PAT with Expiry
-```bash
-mpx-secrets-audit add github-actions-token \
-  --provider github \
-  --type personal_access_token \
-  --created 2025-06-01 \
-  --expires 2026-06-01 \
-  --rotation 365 \
-  --notes "GitHub Actions deployment token"
-```
-
-### Weekly Audit Script
-```bash
-#!/bin/bash
-# weekly-audit.sh
-
-echo "🔍 Running weekly secrets audit..."
-mpx-secrets-audit check
-
-if [ $? -ne 0 ]; then
-  echo "⚠️  Action required!"
-  mpx-secrets-audit report --format markdown --output weekly-report.md
-  # Send alert (email, Slack, etc.)
-fi
-```
-
-## Contributing
-
-Found a bug? Want a new scanner?
-
-- **Issues:** https://github.com/mesaplexdev/mpx-secrets-audit/issues
-- **Pull requests:** Welcome!
+- Config files contain no credentials — just tracking information
+- Safe to commit to version control (consider `.gitignore` for `.secrets-audit.json`)
+- Cloud scanners never expose secret values, only metadata
 
 ## License
 
-MIT License - see [LICENSE](LICENSE)
+Dual License — Free tier for personal use, Pro license for commercial use and advanced features. See [LICENSE](LICENSE) for full terms.
 
-## Author
+## Links
 
-**Mesaplex** <support@mesaplex.com>
+- **Website:** [https://mesaplex.com](https://mesaplex.com)
+- **npm:** [https://www.npmjs.com/package/mpx-secrets-audit](https://www.npmjs.com/package/mpx-secrets-audit)
+- **GitHub:** [https://github.com/mesaplexdev/mpx-secrets-audit](https://github.com/mesaplexdev/mpx-secrets-audit)
+- **Support:** support@mesaplex.com
 
-Part of the [Mesaplex CLI Tools](https://github.com/mesaplexdev) suite.
+### Related Tools
+
+- **[mpx-scan](https://www.npmjs.com/package/mpx-scan)** — Website security scanner
+- **[mpx-api](https://www.npmjs.com/package/mpx-api)** — API testing, mocking, and documentation
+- **[mpx-db](https://www.npmjs.com/package/mpx-db)** — Database management CLI
 
 ---
 
-**Related Tools:**
-- [`mpx-scan`](https://github.com/mesaplexdev/mpx-scan) - Smart file/directory scanning
-- [`mpx-api`](https://github.com/mesaplexdev/mpx-api) - REST API scaffolding
-- [`mpx-db`](https://github.com/mesaplexdev/mpx-db) - Database migration tool
+**Made with ❤️ by [Mesaplex](https://mesaplex.com)**

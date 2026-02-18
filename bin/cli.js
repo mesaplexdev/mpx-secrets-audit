@@ -3,6 +3,10 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import * as readline from 'readline';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json');
+
 import {
   initConfig,
   configExists,
@@ -36,7 +40,7 @@ const program = new Command();
 program
   .name('mpx-secrets-audit')
   .description('Never get caught with expired API keys again — track, audit, and get warned before your secrets expire.')
-  .version('1.1.0')
+  .version(pkg.version)
   .option('--schema', 'Output JSON schema describing all commands and flags');
 
 // Helper function for interactive prompts
@@ -245,7 +249,7 @@ program
           console.log(`   Status: ${chalk[secret.status === 'healthy' ? 'green' : secret.status === 'warning' ? 'yellow' : 'red'](secret.status.toUpperCase())} - ${message}`);
           
           if (age !== null) {
-            console.log(`   Age: ${age} days`);
+            console.log(`   Age: ${age} day${age === 1 ? '' : 's'}`);
           }
           
           if (secret.notes) {
@@ -501,9 +505,14 @@ program
   .command('report')
   .description('Generate audit report')
   .option('-f, --format <format>', 'Report format (text, json, markdown)', 'text')
+  .option('--json', 'Output as JSON (shorthand for --format json)')
   .option('-o, --output <file>', 'Output file (defaults to stdout)')
   .option('-q, --quiet', 'Suppress non-essential output')
   .action(async (options) => {
+    // --json flag overrides --format
+    if (options.json) {
+      options.format = 'json';
+    }
     try {
       if (!configExists()) {
         const errorMsg = 'No config file found.';

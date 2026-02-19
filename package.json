@@ -1,6 +1,6 @@
 {
   "name": "mpx-secrets-audit",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Secrets expiration tracking and audit CLI. Monitor API keys, tokens, and credentials. AI-native with JSON output and MCP server.",
   "type": "module",
   "main": "lib/index.js",
@@ -47,7 +47,8 @@
   "optionalDependencies": {
     "@aws-sdk/client-iam": "^3.893.0",
     "@octokit/rest": "^20.0.2",
-    "fast-xml-parser": "^5.3.6"
+    "fast-xml-parser": "^5.3.6",
+    "pdfkit": "^0.17.2"
   },
   "overrides": {
     "fast-xml-parser": "$fast-xml-parser"

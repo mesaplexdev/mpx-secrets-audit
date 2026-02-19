@@ -44,7 +44,8 @@ program
   .option('--json', 'Output as JSON (machine-readable)')
   .option('-q, --quiet', 'Suppress non-essential output')
   .option('--no-color', 'Disable colored output')
-  .option('--schema', 'Output JSON schema describing all commands and flags');
+  .option('--schema', 'Output JSON schema describing all commands and flags')
+  .passThroughOptions();
 
 // Error handling — must be set BEFORE .command() so subcommands inherit exitOverride
 program.exitOverride();
@@ -533,6 +534,7 @@ program
   .description('Generate audit report')
   .option('-f, --format <format>', 'Report format (text, json, markdown)', 'text')
   .option('--json', 'Output as JSON (shorthand for --format json)')
+  .option('--pdf <filename>', 'Export report as PDF')
   .option('-o, --output <file>', 'Output file (defaults to stdout)')
   .option('-q, --quiet', 'Suppress non-essential output')
   .action(async (options) => {
@@ -572,6 +574,24 @@ program
       }
 
       const secrets = listSecrets();
+
+      // PDF export
+      if (options.pdf) {
+        const { generatePDFReport } = await import('../lib/pdf-reporter.js');
+        const pdfPath = await generatePDFReport(secrets, options.pdf);
+        if (options.json || options.format === 'json') {
+          console.log(JSON.stringify({
+            success: true,
+            format: 'pdf',
+            outputPath: pdfPath,
+            secretsCount: secrets.length
+          }, null, 2));
+        } else if (!options.quiet) {
+          console.log(chalk.green('✓ PDF report saved to:'), pdfPath);
+        }
+        return;
+      }
+
       let report;
 
       switch (options.format) {

@@ -16,7 +16,7 @@ Part of the [Mesaplex](https://mesaplex.com) developer toolchain.
 - **Status dashboard** — Color-coded health overview of all secrets
 - **Rotation policies** — Get warned when secrets are due for rotation
 - **CI/CD ready** — Exit codes, JSON output, no GUI dependency
-- **Multiple report formats** — Text, JSON, Markdown (JSON/Markdown Pro)
+- **Multiple report formats** — Text, JSON, Markdown, PDF (JSON/Markdown Pro)
 - **Cloud scanners** — Auto-detect AWS IAM keys and GitHub PATs (Pro)
 - **MCP server** — Integrates with any MCP-compatible AI agent
 - **Self-documenting** — `--schema` returns machine-readable tool description
@@ -116,6 +116,7 @@ mpx-secrets-audit report                              # Text report
 mpx-secrets-audit report --format json                # JSON (Pro)
 mpx-secrets-audit report --format markdown            # Markdown (Pro)
 mpx-secrets-audit report --format markdown --output report.md
+mpx-secrets-audit report --pdf audit-report.pdf          # PDF export
 ```
 
 ### Cloud Scanners (Pro)
@@ -237,6 +238,7 @@ jobs:
 | Manual entry | ✅ | ✅ |
 | Check and list commands | ✅ | ✅ |
 | Text reports | ✅ | ✅ |
+| PDF reports | ✅ | ✅ |
 | CI/CD exit codes | ✅ | ✅ |
 | MCP server | ✅ | ✅ |
 | JSON/Markdown reports | ❌ | ✅ |
